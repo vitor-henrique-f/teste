@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Floresta dos Blocos</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="floresta.2.css" />
+</head>
+
+<body>
+
+  <!-- INTRODUÇÃO EM TELA PRETA -->
+  <div id="telaPretaIntro">
+    <h2 id="introCap"></h2>
+    <h1 id="introTitulo" style="display: none;"></h1>
+  </div>
+
+  <div class="container" id="introContainer">
+    <div class="intro" id="introducao">
+      <p id="typed-text"></p>
+    </div>
+  </div>
+
+  <div class="container" id="quizContainer">
+    <div class="quiz">
+      <h1 id="typed-title"></h1>
+      <p id="typed-paragraph"></p>
+    </div>
+  </div>
+
+  <!-- Setas -->
+  <img src="https://img.icons8.com/ios-filled/100/long-arrow-right.png" id="setaMina" class="seta-visual"
+    style="bottom: 310px; right: 90px;">
+  <img src="https://img.icons8.com/ios-filled/100/long-arrow-right.png" id="setaFloresta" class="seta-visual"
+    style="top: 40px; left: 600px; transform: rotate(270deg);">
+
+  <!-- Som de digitação -->
+  <audio id="type-sound" src="assets/typing.mp3" preload="auto"></audio>
+
+  <script>
+    const textoIntroEl = document.getElementById("typed-text");
+    const quizContainer = document.getElementById("quizContainer");
+    const typedTitle = document.getElementById("typed-title");
+    const typedParagraph = document.getElementById("typed-paragraph");
+
+    const setaMina = document.getElementById("setaMina");
+    const setaFloresta = document.getElementById("setaFloresta");
+    const fundoOriginal = document.body.style.backgroundImage;
+
+    const typeSound = document.getElementById("type-sound");
+    typeSound.volume = 0.2;
+
+    function tocarSomTecla(char) {
+      if (char !== " " && char !== "\n") {
+        const somClone = typeSound.cloneNode();
+        somClone.volume = 0.2;
+        somClone.play();
+      }
+    }
+
+    function digitarTexto(element, texto, indice, velocidade, callback) {
+      if (indice < texto.length) {
+        const char = texto.charAt(indice);
+        element.style.opacity = "1";
+        element.innerHTML += char === "\n" ? "<br>" : char;
+        tocarSomTecla(char);
+
+        setTimeout(() => digitarTexto(element, texto, indice + 1, velocidade, callback), velocidade);
+      } else if (callback) {
+        callback();
+      }
+    }
+
+    // Função digitarIntro atualizada para textos em sequência
+    function digitarIntro() {
+      textoIntroEl.innerHTML = "";
+      textoIntroEl.style.opacity = "0";
+
+      const textos = [
+       "Você entra na floresta e se depara com um monstrinho cogumelo!",
+        "Ache todos os pares para derrotá-lo!"        
+      ];
+
+      let index = 0;
+      let digitando = false;
+
+      function digitarProximoTexto() {
+        if (digitando) return;
+        digitando = true;
+        textoIntroEl.innerHTML = "";
+        digitarTexto(textoIntroEl, textos[index], 0, 40, () => {
+          digitando = false;
+          index++;
+          if (index >= textos.length) {
+            document.body.onclick = iniciarJogo;
+          }
+        });
+      }
+
+      setTimeout(() => {
+        textoIntroEl.style.transition = "opacity 1.5s ease";
+        textoIntroEl.style.opacity = "1";
+        textoIntroEl.onclick = () => {
+          if (!digitando && index < textos.length) {
+            digitarProximoTexto();
+          }
+        };
+        // Digita o primeiro texto apenas ao clicar
+        digitarProximoTexto();
+      }, 200);
+    }
+
+    function digitarQuiz() {
+      typedTitle.innerHTML = "";
+      typedParagraph.innerHTML = "";
+
+      digitarTexto(typedTitle, textoQuizTitle, 0, 40, () => {
+        setTimeout(() => {
+          digitarTexto(typedParagraph, textoQuizParagraph, 0, 35, () => {
+            setaMina.classList.add("fade-in");
+            setaFloresta.classList.add("fade-in");
+          });
+        }, 300);
+      });
+    }
+
+    function iniciarJogo() {
+      if (!iniciado && textoIntroEl.innerHTML.length > 0) {
+        iniciado = true;
+        document.body.onclick = null;
+        document.getElementById("introContainer").style.display = "none";
+        quizContainer.style.display = "flex";
+        document.body.style.cursor = "default";
+        digitarQuiz();
+      }
+    }
+
+    setaMina.addEventListener("mouseover", () => {
+      document.body.style.backgroundImage = "url('https://i.pinimg.com/originals/23/95/54/2395544bff0ddf8217c28c645cf604e5.gif')";
+    });
+
+    setaMina.addEventListener("mouseout", () => {
+      document.body.style.backgroundImage = fundoOriginal;
+    });
+
+    setaMina.addEventListener("click", () => {
+      window.location.href = "mina.html";
+    });
+
+    setaFloresta.addEventListener("mouseover", () => {
+      document.body.style.backgroundImage = "url('https://i.pinimg.com/originals/e3/97/5f/e3975fe301f9c6b8927c7934662d60e4.gif')";
+    });
+
+    setaFloresta.addEventListener("mouseout", () => {
+      document.body.style.backgroundImage = fundoOriginal;
+    });
+
+    setaFloresta.addEventListener("click", () => {
+      window.location.href = "seguir.html";
+    });
+
+    // INTRODUÇÃO COM SEQUÊNCIA AJUSTADA
+    window.addEventListener("load", () => {
+      const telaPreta = document.getElementById("telaPretaIntro");
+      const cap = document.getElementById("introCap");
+      const titulo = document.getElementById("introTitulo");
+
+      cap.classList.add("mostrar");
+
+      setTimeout(() => {
+        cap.classList.remove("mostrar");
+
+        // Após o fade-out, esconde completamente
+        setTimeout(() => {
+          cap.style.display = "none";
+
+          // Agora mostra "Floresta dos Pixels"
+          titulo.style.display = "block";
+          titulo.classList.add("mostrar");
+
+          // E depois começa o fade-out da tela preta
+          setTimeout(() => {
+            telaPreta.style.opacity = "0";
+
+            setTimeout(() => {
+              telaPreta.style.display = "none";
+              digitarIntro();
+            }, 2000);
+          }, 2500);
+
+        }, 500); // Aguarda o fade-out antes de esconder
+      }, 2000); // Tempo do fade-in do "CAPÍTULO 1"
+    });
+  </script>
+  
+
+</body>
+
+</html>
